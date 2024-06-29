@@ -13,44 +13,173 @@ const int screenHeight = 800;
 const int boardOffsetX = (screenWidth - BOARD_WIDTH * CELL_SIZE) / 2;
 const int boardOffsetY = (screenHeight - BOARD_HEIGHT * CELL_SIZE) / 2;
 
-class Map 
+class Map
 {
+
 public:
-    void DrawMap() 
+    void DrawMap()
     {
-        for (int y = 0; y < BOARD_HEIGHT; y++) 
+        for (int y = 0; y < BOARD_HEIGHT; y++)
         {
             std::string leftWall = (y == 0) ? "<!" : "<!";
             std::string rightWall = (y == 0) ? "!>" : "!>";
-            
+
             DrawText(leftWall.c_str(), boardOffsetX - CELL_SIZE, boardOffsetY + y * CELL_SIZE, CELL_SIZE, GREEN);
             DrawText(rightWall.c_str(), boardOffsetX + BOARD_WIDTH * CELL_SIZE, boardOffsetY + y * CELL_SIZE, CELL_SIZE, GREEN);
-            
-            for (int x = 0; x < BOARD_WIDTH; x++) 
+
+            for (int x = 0; x < BOARD_WIDTH; x++)
             {
                 DrawText(".", boardOffsetX + x * CELL_SIZE + CELL_SIZE / 2, boardOffsetY + y * CELL_SIZE, CELL_SIZE, GREEN);
             }
         }
-        
+
         // Draw bottom
         DrawText("<!=====================!>", boardOffsetX - CELL_SIZE, boardOffsetY + BOARD_HEIGHT * CELL_SIZE, CELL_SIZE, GREEN);
         DrawText(" \\/\\/\\/\\/\\/\\/\\/", boardOffsetX - CELL_SIZE, boardOffsetY + (BOARD_HEIGHT + 1) * CELL_SIZE, CELL_SIZE, GREEN);
     }
 };
 
-int main() 
+class Block
+{
+
+private:
+    int block[4][4];
+    int posX, posY;
+
+    // 0
+    int OBlock[4][4] =
+        {
+            {0, 0, 0, 0},
+            {0, 1, 1, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0},
+    };
+
+    // 1
+    int IBlock[4][4] =
+        {
+            {0, 0, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 1, 0},
+            {0, 0, 1, 0},
+    };
+
+    // 2
+    int TBlock[4][4] =
+        {
+            {0, 0, 0, 0},
+            {0, 0, 1, 0},
+            {0, 1, 1, 1},
+            {0, 0, 0, 0},
+    };
+
+    // 3
+    int JBlock[4][4] =
+        {
+            {0, 0, 0, 0},
+            {0, 1, 0, 0},
+            {0, 1, 1, 1},
+            {0, 0, 0, 0},
+    };
+
+    // 4
+    int LBlock[4][4] =
+        {
+            {0, 0, 0, 0},
+            {0, 0, 1, 0},
+            {1, 1, 1, 0},
+            {0, 0, 0, 0},
+    };
+
+    // 5
+    int SBlock[4][4] =
+        {
+            {0, 0, 0, 0},
+            {0, 1, 1, 0},
+            {1, 1, 0, 0},
+            {0, 0, 0, 0},
+    };
+
+    // 6
+    int ZBlock[4][4] =
+        {
+            {0, 0, 0, 0},
+            {1, 1, 0, 0},
+            {0, 1, 1, 0},
+            {0, 0, 0, 0},
+    };
+
+public:
+    Block(int bloackType)
+    {
+        switch (bloackType)
+        {
+        case 0:
+            memcpy(block, OBlock, sizeof(block));
+            break;
+        case 1:
+            memcpy(block, IBlock, sizeof(block));
+            break;
+        case 2:
+            memcpy(block, TBlock, sizeof(block));
+            break;
+        case 3:
+            memcpy(block, JBlock, sizeof(block));
+            break;
+        case 4:
+            memcpy(block, LBlock, sizeof(block));
+            break;
+        case 5:
+            memcpy(block, SBlock, sizeof(block));
+            break;
+        case 6:
+            memcpy(block, ZBlock, sizeof(block));
+            break;
+        default:
+            break;
+        }
+
+        posX = BOARD_WIDTH / 2; // cebter start
+        posY = 0; // top start
+    }
+
+    void DrawBlock()
+    {
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                if (block[y][x] == 1)
+                {
+                    int blockX = boardOffsetX + (posX + x) * CELL_SIZE + CELL_SIZE / 2;
+                    int blockY = boardOffsetY + (posY + y) * CELL_SIZE + CELL_SIZE / 2;
+
+                    DrawText("[]", blockX, blockY, CELL_SIZE, GREEN);
+                }
+                
+            }
+                
+        }
+        
+    }
+};
+
+int main()
 {
     InitWindow(screenWidth, screenHeight, "Tetris 1984");
     SetTargetFPS(60);
 
-    Map gameMap;
+    Map Map;
+    Block Block(1);
 
-    while (!WindowShouldClose()) 
+
+    while (!WindowShouldClose())
     {
         BeginDrawing();
         ClearBackground(BLACK);
 
-        gameMap.DrawMap();
+        Map.DrawMap();
+        Block.DrawBlock();
 
         EndDrawing();
     }
