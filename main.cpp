@@ -1,5 +1,6 @@
 #include <raylib.h>
 #include <string>
+#include "raymath.h"
 
 enum BOARD
 {
@@ -112,6 +113,11 @@ private:
 public:
     Block(int bloackType)
     {
+        if (bloackType == -1)
+        {
+            bloackType = rand() % 7;
+        }
+        
         switch (bloackType)
         {
         case 0:
@@ -140,7 +146,7 @@ public:
         }
 
         posX = BOARD_WIDTH / 2; // cebter start
-        posY = 0; // top start
+        posY = -1; // top start
     }
 
     void DrawBlock()
@@ -162,6 +168,11 @@ public:
         }
         
     }
+
+    void Update()
+    {
+    }
+
 };
 
 int main()
@@ -169,8 +180,8 @@ int main()
     InitWindow(screenWidth, screenHeight, "Tetris 1984");
     SetTargetFPS(60);
 
-    Map Map;
-    Block Block(1);
+    Map map;
+    Block block(-1);
 
 
     while (!WindowShouldClose())
@@ -178,8 +189,8 @@ int main()
         BeginDrawing();
         ClearBackground(BLACK);
 
-        Map.DrawMap();
-        Block.DrawBlock();
+        map.DrawMap();
+        block.DrawBlock();
 
         EndDrawing();
     }
