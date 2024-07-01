@@ -16,14 +16,13 @@ const int boardOffsetY = (screenHeight - BOARD_HEIGHT * CELL_SIZE) / 2;
 
 class Map
 {
-
 public:
     void DrawMap()
     {
         for (int y = 0; y < BOARD_HEIGHT; y++)
         {
-            std::string leftWall = (y == 0) ? "<!" : "<!";
-            std::string rightWall = (y == 0) ? "!>" : "!>";
+            std::string leftWall = "<!";
+            std::string rightWall = "!>";
 
             DrawText(leftWall.c_str(), boardOffsetX - CELL_SIZE, boardOffsetY + y * CELL_SIZE, CELL_SIZE, GREEN);
             DrawText(rightWall.c_str(), boardOffsetX + BOARD_WIDTH * CELL_SIZE, boardOffsetY + y * CELL_SIZE, CELL_SIZE, GREEN);
@@ -42,12 +41,12 @@ public:
 
 class Block
 {
-
 private:
     int block[4][4];
     int posX, posY;
+    double lastMoveTime, lastHorizontalMoveTime;
+    double moveDelay, horizontalMoveDelay;
 
-    // 0
     int OBlock[4][4] =
         {
             {0, 0, 0, 0},
@@ -56,7 +55,6 @@ private:
             {0, 0, 0, 0},
     };
 
-    // 1
     int IBlock[4][4] =
         {
             {0, 0, 1, 0},
@@ -65,7 +63,6 @@ private:
             {0, 0, 1, 0},
     };
 
-    // 2
     int TBlock[4][4] =
         {
             {0, 0, 0, 0},
@@ -74,7 +71,6 @@ private:
             {0, 0, 0, 0},
     };
 
-    // 3
     int JBlock[4][4] =
         {
             {0, 0, 0, 0},
@@ -83,7 +79,6 @@ private:
             {0, 0, 0, 0},
     };
 
-    // 4
     int LBlock[4][4] =
         {
             {0, 0, 0, 0},
@@ -92,7 +87,6 @@ private:
             {0, 0, 0, 0},
     };
 
-    // 5
     int SBlock[4][4] =
         {
             {0, 0, 0, 0},
@@ -101,7 +95,6 @@ private:
             {0, 0, 0, 0},
     };
 
-    // 6
     int ZBlock[4][4] =
         {
             {0, 0, 0, 0},
@@ -111,14 +104,12 @@ private:
     };
 
 public:
-    Block(int bloackType)
+    Block(int blockType)
     {
-        if (bloackType == -1)
-        {
-            bloackType = rand() % 7;
-        }
-        
-        switch (bloackType)
+        if (blockType == -1)
+            blockType = GetRandomValue(0, 6);
+
+        switch (blockType)
         {
         case 0:
             memcpy(block, OBlock, sizeof(block));
@@ -141,12 +132,14 @@ public:
         case 6:
             memcpy(block, ZBlock, sizeof(block));
             break;
-        default:
-            break;
         }
 
-        posX = BOARD_WIDTH / 2; // cebter start
-        posY = -1; // top start
+        posX = BOARD_WIDTH / 2;
+        posY = -1;
+        lastMoveTime = GetTime();
+        lastHorizontalMoveTime = GetTime();
+        moveDelay = 0.5;
+        horizontalMoveDelay = 0.1; // Adjust horizontal speed
     }
 
     void DrawBlock()
@@ -157,22 +150,76 @@ public:
             {
                 if (block[y][x] == 1)
                 {
-                    int blockX = boardOffsetX + (posX + x) * CELL_SIZE + CELL_SIZE / 2;
-                    int blockY = boardOffsetY + (posY + y) * CELL_SIZE + CELL_SIZE / 2;
+                    int blockX = boardOffsetX + (posX + x) * CELL_SIZE;
+                    int blockY = boardOffsetY + (posY + y) * CELL_SIZE;
 
                     DrawText("[]", blockX, blockY, CELL_SIZE, GREEN);
                 }
-                
             }
-                
         }
-        
     }
 
     void Update()
     {
+        double currentTime = GetTime();
+
+        // Move down
+        if (currentTime - lastMoveTime >= moveDelay)
+        {
+            lastMoveTime = currentTime;
+            posY++;
+            if (posY >= BOARD_HEIGHT - 1)
+            {
+                posX = BOARD_WIDTH / 2;
+                posY = -1;
+                return;
+            }
+        }
+
+        // Move left or right
+        if (currentTime - lastHorizontalMoveTime >= horizontalMoveDelay)
+        {
+            int moveX = 0;
+            if (IsKeyDown(KEY_LEFT) && CanMoveLeft()) moveX--;
+            if (IsKeyDown(KEY_RIGHT) && CanMoveRight()) moveX++;
+
+            if (moveX != 0)
+            {
+                posX += moveX;
+                lastHorizontalMoveTime = currentTime;
+            }
+        }
     }
 
+    bool CanMoveLeft()
+    {
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                if (block[y][x] == 1 && posX + x - 1 < 0)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    bool CanMoveRight()
+    {
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                if (block[y][x] == 1 && posX + x + 1 >= BOARD_WIDTH)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 };
 
 int main()
@@ -183,7 +230,6 @@ int main()
     Map map;
     Block block(-1);
 
-
     while (!WindowShouldClose())
     {
         BeginDrawing();
@@ -191,6 +237,7 @@ int main()
 
         map.DrawMap();
         block.DrawBlock();
+        block.Update();
 
         EndDrawing();
     }
