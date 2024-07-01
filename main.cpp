@@ -106,7 +106,7 @@ private:
 public:
     Block(int blockType)
     {
-        if (blockType == -1)
+        if (blockType < 0 || blockType > 6)
             blockType = GetRandomValue(0, 6);
 
         switch (blockType)
@@ -180,14 +180,22 @@ public:
         if (currentTime - lastHorizontalMoveTime >= horizontalMoveDelay)
         {
             int moveX = 0;
-            if (IsKeyDown(KEY_LEFT) && CanMoveLeft()) moveX--;
-            if (IsKeyDown(KEY_RIGHT) && CanMoveRight()) moveX++;
+            if (IsKeyDown(KEY_LEFT) && CanMoveLeft())
+                moveX--;
+            if (IsKeyDown(KEY_RIGHT) && CanMoveRight())
+                moveX++;
 
             if (moveX != 0)
             {
                 posX += moveX;
                 lastHorizontalMoveTime = currentTime;
             }
+        }
+
+        // Rotate
+        if (IsKeyPressed(KEY_R))
+        {
+            RotateBlock();
         }
     }
 
@@ -219,6 +227,21 @@ public:
             }
         }
         return true;
+    }
+
+    void RotateBlock()
+    {
+        int rotatedBlock[4][4] = {0};
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                rotatedBlock[x][3 - y] = block[y][x];
+            }
+        }
+
+        memcpy(block, rotatedBlock, sizeof(block));
     }
 };
 
